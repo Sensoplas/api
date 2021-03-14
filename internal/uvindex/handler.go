@@ -1,6 +1,7 @@
 package uvindex
 
 import (
+	"github.com/Sensoplas/api/models"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"go.uber.org/zap"
 )
@@ -10,9 +11,13 @@ func MakeHTTPHandler(svc Service, logger *zap.Logger) *httptransport.Server {
 	endpoint := MakeUVIComputeEndpoint(service)
 	endpoint = endpointLoggingMiddleware(logger)(endpoint)
 
-	return httptransport.NewServer(
+	server := httptransport.NewServer(
 		endpoint,
 		httpDecoderMiddleware(logger)(DecodeUVIRequestHTTP),
 		EncodeResponse,
+		httptransport.ServerBefore(),
+		httptransport.ServerErrorEncoder(models.EncodeErrorHTTP(logger)),
 	)
+
+	return server
 }
