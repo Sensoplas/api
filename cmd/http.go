@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -34,13 +35,13 @@ var httpServerCmd = &cobra.Command{
 		defer logger.Sync()
 		logger = logger.With(zap.String("service", "sensoplas-api"))
 		r := mux.NewRouter()
-		r.Handle("/uvi-prediction", uvindex.MakeHTTPHandler(&uvindex.RNGService{}, logger))
+		r.Handle("/uvi-prediction", uvindex.MakeHTTPHandler(&uvindex.RNGService{}, logger)).Methods(http.MethodPost)
 
 		// This is very much not needed because of endless. Will catch signals either way.
 		errs := make(chan error, 2)
 		go func() {
 			logger.Info("server starting", zap.String("transport", "http"))
-			errs <- endless.ListenAndServe("localhost:"+port, r)
+			errs <- endless.ListenAndServe("localhost:"+port, accessControl(r))
 		}()
 		go func() {
 			c := make(chan os.Signal, 1)
@@ -57,4 +58,18 @@ var httpServerCmd = &cobra.Command{
 func init() {
 	httpServerCmd.Flags().StringVarP(&port, "port", "p", "8080", "specifies the port for the http server to run on, defaults to 8080")
 	rootCmd.AddCommand(httpServerCmd)
+}
+
+func accessControl(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
 }

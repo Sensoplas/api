@@ -2,6 +2,7 @@ package uvindex
 
 import (
 	"context"
+	"net/http"
 
 	firebase "firebase.google.com/go/v4"
 	"github.com/Sensoplas/api/internal/auth"
@@ -34,7 +35,11 @@ func MakeHTTPHandler(svc Service, logger *zap.Logger) *httptransport.Server {
 		endpoint,
 		httpDecoderMiddleware(logger)(DecodeUVIRequestHTTP),
 		EncodeResponse,
-		httptransport.ServerBefore(jwt.HTTPToContext()),
+		httptransport.ServerBefore(func(c context.Context, r *http.Request) context.Context {
+			logger.Info("received request", zap.String("method", r.Method), zap.String("host", r.Host), zap.String("path", r.URL.Path))
+
+			return c
+		}, jwt.HTTPToContext()),
 		httptransport.ServerErrorEncoder(models.EncodeErrorHTTP(logger)),
 	)
 
