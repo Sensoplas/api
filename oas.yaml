@@ -1,0 +1,42 @@
+openapi: "3.0.0"
+
+info:
+  title: SensoPlas API
+  version: v0.1.0
+
+servers:
+  - url: https://sensoplas.web.app/api
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+paths:
+  /uvi-prediction:
+    post:
+      description: obtain UVI prediction from data
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: string
+      responses:
+        '200':
+          description: successfully predict UV index
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prediction:
+                    type: number
+
+
