@@ -41,7 +41,7 @@ var httpServerCmd = &cobra.Command{
 		errs := make(chan error, 2)
 		go func() {
 			logger.Info("server starting", zap.String("transport", "http"))
-			errs <- endless.ListenAndServe("localhost:"+port, accessControl(r))
+			errs <- endless.ListenAndServe("0.0.0.0:"+port, accessControl(r))
 		}()
 		go func() {
 			c := make(chan os.Signal, 1)

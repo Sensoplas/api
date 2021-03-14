@@ -12,4 +12,6 @@ COPY --from=build /etc/nsswitch.conf /etc/nsswitch.conf
 
 LABEL app="sensoplas-api"
 
+ENV PORT="8080"
+
 ENTRYPOINT [ "/bin/api", "http" ]
