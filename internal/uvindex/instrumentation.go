@@ -3,6 +3,7 @@ package uvindex
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/Sensoplas/api/internal/cont"
 	"github.com/Sensoplas/api/internal/logging"
@@ -56,4 +57,33 @@ func httpDecoderMiddleware(logger *zap.Logger) func(httptransport.DecodeRequestF
 			return req, err
 		}
 	}
+}
+
+func WithServiceLogger(logger *zap.Logger, next Service) *LoggingService {
+	return &LoggingService{logger, next}
+}
+
+var _ Service = &LoggingService{}
+
+type LoggingService struct {
+	logger *zap.Logger
+	next   Service
+}
+
+func (s *LoggingService) Compute(c context.Context, d SensorData) (output float32, err error) {
+	defer func(begin time.Time) {
+		fields := []zap.Field{
+			zap.String("method", "compute"),
+			zap.Float32("output", output),
+			zap.Duration("took", time.Since(begin)),
+		}
+		id, err := cont.GetIDTokenClaims(c)
+		if err == nil {
+			fields = append(fields, zap.String("userID", id.Subject))
+		}
+		s.logger.Info("", fields...)
+	}(time.Now())
+
+	output, err = s.next.Compute(c, d)
+	return
 }

@@ -26,7 +26,7 @@ func MakeHTTPHandler(svc Service, logger *zap.Logger) *httptransport.Server {
 		panic(err)
 	}
 
-	service := svc
+	service := WithServiceLogger(logger, svc)
 	endpoint := MakeUVIComputeEndpoint(service)
 	endpoint = endpointLoggingMiddleware(logger)(endpoint)
 	endpoint = auth.FirebaseIDTokenMiddleware(authClient, logger)(endpoint)
