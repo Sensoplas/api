@@ -13,7 +13,7 @@ import (
 )
 
 func MakeHTTPHandler(svc Service, logger *zap.Logger) *httptransport.Server {
-	app, err := firebase.NewApp(context.Background(), nil)
+	app, err := firebase.NewApp(context.Background(), &firebase.Config{ProjectID: "sensoplas"})
 	if err != nil {
 		logger.Panic("start up panic: cannot configure firebase app", zap.Error(err))
 		panic(err)
@@ -26,7 +26,16 @@ func MakeHTTPHandler(svc Service, logger *zap.Logger) *httptransport.Server {
 		panic(err)
 	}
 
-	service := WithServiceLogger(logger, svc)
+	firestoreClient, err := app.Firestore(context.Background())
+
+	if err != nil {
+		logger.Panic("start up panic: cannot configure firebase firestore client", zap.Error(err))
+		panic(err)
+	}
+
+	var service Service
+	service = WithExposureTracking(svc, firestoreClient, logger)
+	service = WithServiceLogger(logger, service)
 	endpoint := MakeUVIComputeEndpoint(service)
 	endpoint = endpointLoggingMiddleware(logger)(endpoint)
 	endpoint = auth.FirebaseIDTokenMiddleware(authClient, logger)(endpoint)
