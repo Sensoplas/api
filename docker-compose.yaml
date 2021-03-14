@@ -1,0 +1,5 @@
+version: "3"
+services: 
+  api:
+    image: 2785/sensoplas-api
+    build: .
