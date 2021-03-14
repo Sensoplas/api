@@ -35,7 +35,7 @@ var httpServerCmd = &cobra.Command{
 		defer logger.Sync()
 		logger = logger.With(zap.String("service", "sensoplas-api"))
 		r := mux.NewRouter()
-		r.Handle("/uvi-prediction", uvindex.MakeHTTPHandler(&uvindex.RNGService{}, logger)).Methods(http.MethodPost)
+		r.Handle("/api/uvi-prediction", uvindex.MakeHTTPHandler(&uvindex.RNGService{}, logger)).Methods(http.MethodPost)
 
 		// This is very much not needed because of endless. Will catch signals either way.
 		errs := make(chan error, 2)
