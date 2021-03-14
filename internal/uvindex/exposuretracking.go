@@ -36,7 +36,7 @@ func (s *ExposureTrackingService) Compute(ctx context.Context, data SensorData) 
 
 		if tokenErr == nil {
 			_, res, writeErr := s.firestore.Collection("exposure").Doc("time-series").Collection(token.Subject).Add(ctx, map[string]interface{}{
-				"time":     time.Now(),
+				"time":     time.Now().Unix(),
 				"exposure": pred,
 			})
 

@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	firebase "firebase.google.com/go/v4"
+	"github.com/Sensoplas/api/internal/trend"
 	"github.com/Sensoplas/api/internal/uvindex"
 	"github.com/fvbock/endless"
 	"github.com/gorilla/mux"
@@ -33,10 +36,26 @@ var httpServerCmd = &cobra.Command{
 		// we ignore zap logger sync error
 		//nolint: errcheck
 		defer logger.Sync()
+
+		app, err := firebase.NewApp(context.Background(), &firebase.Config{ProjectID: "sensoplas"})
+		if err != nil {
+			logger.Panic("start up panic: cannot configure firebase app", zap.Error(err))
+			panic(err)
+		}
+
+		firestoreClient, err := app.Firestore(context.Background())
+
+		if err != nil {
+			logger.Panic("start up panic: cannot configure firebase firestore client", zap.Error(err))
+			panic(err)
+		}
+
+		trendingService := trend.NewFirestoreTrendingService(firestoreClient)
+
 		logger = logger.With(zap.String("service", "sensoplas-api"))
 		r := mux.NewRouter()
-		r.Handle("/api/uvi-prediction", uvindex.MakeHTTPHandler(&uvindex.RNGService{}, logger)).Methods(http.MethodPost)
-
+		r.Handle("/api/uvi-prediction", uvindex.MakeHTTPHandler(&uvindex.RNGService{}, logger, app)).Methods(http.MethodPost)
+		r.Handle("/api/trend", trend.MakeHTTPHandler(trendingService, logger, app)).Methods(http.MethodPost)
 		// This is very much not needed because of endless. Will catch signals either way.
 		errs := make(chan error, 2)
 		go func() {
