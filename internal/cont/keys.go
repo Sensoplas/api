@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+
+	"firebase.google.com/go/v4/auth"
+	firebaseauth "firebase.google.com/go/v4/auth"
 )
 
 type ContextKey string
 
 const (
 	OperationNameContextKey = ContextKey("OperationName")
+	IDTokenClaimsContextKey = ContextKey("IDTokenClaims")
 )
 
 func newContextKeyNotFoundErr(key ContextKey) *ErrContextKeyNotFound {
@@ -56,4 +60,22 @@ func GetOperationName(ctx context.Context) (string, error) {
 
 func WithOperationName(ctx context.Context, name string) context.Context {
 	return context.WithValue(ctx, OperationNameContextKey, name)
+}
+
+func GetIDTokenClaims(ctx context.Context) (*firebaseauth.Token, error) {
+	val := ctx.Value(IDTokenClaimsContextKey)
+	if val == nil {
+		return nil, newContextKeyNotFoundErr(IDTokenClaimsContextKey)
+	}
+
+	claims, ok := val.(*firebaseauth.Token)
+	if !ok {
+		return nil, newContextUnexpectedTypeErr(IDTokenClaimsContextKey, "*firebase.google.com/go/v4/auth.Token", val)
+	}
+
+	return claims, nil
+}
+
+func WithIDTokenClaims(ctx context.Context, claims *auth.Token) context.Context {
+	return context.WithValue(ctx, IDTokenClaimsContextKey, claims)
 }

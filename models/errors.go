@@ -83,3 +83,11 @@ func (e *GenericServerError) ClientMessage() string {
 func (e *GenericServerError) Type() ServerErrorType {
 	return e.t
 }
+
+func NewUnauthenticatedError(e error) *GenericClientError {
+	return &GenericClientError{
+		"token not found or invalid, please authenticate with bearer token",
+		e,
+		Unauthorized,
+	}
+}
