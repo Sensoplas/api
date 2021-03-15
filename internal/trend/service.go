@@ -47,7 +47,7 @@ func (s *FirestoreTrendingService) GetTimeSeries(ctx context.Context, userID str
 				YAxis: chart.YAxisPrimary,
 				Style: chart.Style{
 					StrokeColor: chart.GetDefaultColor(0).WithAlpha(64),
-					StrokeWidth: 1,
+					DotWidth:    5,
 					FillColor:   chart.GetDefaultColor(0).WithAlpha(64),
 				},
 				XValues: xVals,
