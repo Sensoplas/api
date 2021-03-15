@@ -10,5 +10,6 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
+	github.com/wcharczuk/go-chart/v2 v2.1.0
 	go.uber.org/zap v1.13.0
 )
