@@ -8,7 +8,9 @@ import (
 )
 
 type UVIRequest struct {
-	Data SensorData `json:"data"`
+	Data string  `json:"data"`
+	Lat  float32 `json:"lat"`
+	Long float32 `json:"long"`
 }
 
 type UVIResponse struct {
@@ -23,7 +25,7 @@ func MakeUVIComputeEndpoint(svc Service) endpoint.Endpoint {
 			return nil, errors.New("request of unexpected type")
 		}
 
-		pred, err := svc.Compute(ctx, req.Data)
+		pred, err := svc.Compute(ctx, req.Data, req.Lat, req.Long)
 		if err != nil {
 			return UVIResponse{Err: err.Error()}, nil
 		}

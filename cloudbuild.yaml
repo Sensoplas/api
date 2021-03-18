@@ -1,3 +1,14 @@
 steps:
-- name: "gcr.io/cloud-builders/docker"
-  args: ['build','-t', 'gcr.io/sensoplas/api']
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: "bash"
+    args:
+      - -c
+      - docker build --build-arg omw=$$OMW_API_KEY --build-arg buildTime_MODELSIZE=3200 -t gcr.io/sensoplas/api .
+    secretEnv:
+      - "OMW_API_KEY"
+availableSecrets:
+  secretManager:
+    - versionName: projects/255027643781/secrets/owm-api-key/versions/1
+      env: "OMW_API_KEY"
+images:
+  - "gcr.io/sensoplas/api"

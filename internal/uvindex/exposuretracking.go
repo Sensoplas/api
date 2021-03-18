@@ -25,8 +25,8 @@ type ExposureTrackingService struct {
 	logger    *zap.Logger
 }
 
-func (s *ExposureTrackingService) Compute(ctx context.Context, data SensorData) (float32, error) {
-	pred, err := s.service.Compute(ctx, data)
+func (s *ExposureTrackingService) Compute(ctx context.Context, data string, lat, long float32) (float32, error) {
+	pred, err := s.service.Compute(ctx, data, lat, long)
 
 	if err == nil {
 		token, tokenErr := cont.GetIDTokenClaims(ctx)

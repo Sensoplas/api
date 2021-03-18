@@ -11,6 +11,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"github.com/Sensoplas/api/internal/trend"
 	"github.com/Sensoplas/api/internal/uvindex"
+	"github.com/briandowns/openweathermap"
 	"github.com/fvbock/endless"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -52,9 +53,22 @@ var httpServerCmd = &cobra.Command{
 
 		trendingService := trend.NewFirestoreTrendingService(firestoreClient)
 
+		apiKey := os.Getenv("OMW_API_KEY")
+		if apiKey == "" {
+			logger.Panic("not configured with owm api key")
+			panic("not configured with omw api key")
+		}
+
+		weatherAPI, err := openweathermap.NewUV(apiKey)
+
+		if err != nil {
+			logger.Panic("start up panic: cannot construct openweathermap api")
+			panic(err)
+		}
+
 		logger = logger.With(zap.String("service", "sensoplas-api"))
 		r := mux.NewRouter()
-		r.Handle("/api/uvi-prediction", uvindex.MakeHTTPHandler(&uvindex.RNGService{}, logger, app)).Methods(http.MethodPost)
+		r.Handle("/api/uvi-prediction", uvindex.MakeHTTPHandler(&uvindex.LocationService{WeatherAPI: weatherAPI}, logger, app)).Methods(http.MethodPost)
 		r.Handle("/api/trend", trend.MakeHTTPHandler(trendingService, logger, app)).Methods(http.MethodGet)
 		// This is very much not needed because of endless. Will catch signals either way.
 		errs := make(chan error, 2)

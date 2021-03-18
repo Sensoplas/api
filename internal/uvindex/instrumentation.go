@@ -70,7 +70,7 @@ type LoggingService struct {
 	next   Service
 }
 
-func (s *LoggingService) Compute(c context.Context, d SensorData) (output float32, err error) {
+func (s *LoggingService) Compute(c context.Context, d string, lat, long float32) (output float32, err error) {
 	defer func(begin time.Time) {
 		fields := []zap.Field{
 			zap.String("method", "compute"),
@@ -84,6 +84,6 @@ func (s *LoggingService) Compute(c context.Context, d SensorData) (output float3
 		s.logger.Info("", fields...)
 	}(time.Now())
 
-	output, err = s.next.Compute(c, d)
+	output, err = s.next.Compute(c, d, lat, long)
 	return
 }
