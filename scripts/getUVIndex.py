@@ -9,7 +9,7 @@ def buildPredictSet(inString: str, maxSize:int):
     newString = inString.split(',')
     data = [float(x) for x in newString]
     if len(data) > maxSize:
-        data = data[::maxSize]
+        data = data[:maxSize]
     else:
         meanData = np.mean(data)
         data = data + [meanData]*(maxSize-len(data))
